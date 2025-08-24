@@ -53,7 +53,8 @@ A structured Gmail message listing all daily submissions with: submitter name, t
 
 https://www.youtube.com/watch?v=iK-BgbcrteQ
 
-How it works
+## How it works
+
 ⏰ Trigger: workflow runs once a day at your chosen time (default 5 PM).
 
 📑 Collects all requests from that day in the Google Sheet.
