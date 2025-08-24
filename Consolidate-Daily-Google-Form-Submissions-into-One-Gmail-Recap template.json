@@ -1,0 +1,192 @@
+{
+  "name": "Google Form Daily Recap to Email",
+  "nodes": [
+    {
+      "parameters": {
+        "sendTo": "email",
+        "subject": "The requests you received today",
+        "message": "={{$json.html}}",
+        "options": {}
+      },
+      "id": "bed3b066-6404-4c31-b6e0-bcb015baaed6",
+      "name": "Sum up email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        960,
+        304
+      ],
+      "webhookId": "d376e469-4595-4972-9d58-ef4bbb1e7982",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 17
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": "id"
+        },
+        "event": "rowAdded",
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A1:Z1000"
+            }
+          }
+        }
+      },
+      "id": "4536fde6-6464-4b85-bafc-746f02be4b9d",
+      "name": "Trigger data for new row",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "position": [
+        336,
+        304
+      ],
+      "notesInFlow": false,
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Required\n\n\n- Google account\n- Google Form\n- Google Sheet linked to the form",
+        "color": 3
+      },
+      "id": "14acde76-d996-4626-89f3-f128380a46fa",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 1.Workflow trigger et data gathering\n\nThe workflow is **triggered automatically** everyday at 5pm. \n\nHow to setup:\n- Set up your Google form and link it to a google sheet\n- link the google sheet to this workflow",
+        "height": 848,
+        "width": 416,
+        "color": 2
+      },
+      "id": "ede799e7-8e97-4f64-a6a8-b119eba2ed6c",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        272,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 2. Send the email\n\nThe code node, will create the message and gather all the informations wanted about the row added during the day and will list them (row newly added). So a full sum um will be sent in one message only.\n\n\nHow to setup:\n- Connect with your Gmail account credentials.",
+        "height": 848,
+        "width": 560,
+        "color": 4
+      },
+      "id": "c79a18a1-8228-49d1-90de-31315acaf0d4",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\n\n// helper: get eh first existing key\nconst pick = (obj, keys) => {\n  for (const k of keys) if (k in obj && obj[k] != null && obj[k] !== '') return obj[k];\n  return undefined;\n};\n\nconst categories = {};\nfor (const row of rows) {\n  const category = pick(row, ['Catégorie', 'Category']) || 'Non classé';\n  const question = pick(row, ['Question', 'Please write your request', 'Please write your re', 'Request', 'Message']) || '(no question)';\n  const from     = pick(row, ['Nom', 'Name', 'Full Name', 'Adresse e-mail', 'Email Address', 'Email']) || 'Anonymous';\n\n  if (!categories[category]) categories[category] = [];\n  categories[category].push({ question, from });\n}\n\nlet html = `<h2>📬 Questions of the day received (${rows.length})</h2>`;\nfor (const [cat, items] of Object.entries(categories)) {\n  html += `<h3>${cat} (${items.length})</h3><ul>`;\n  for (const it of items) {\n    html += `<li><strong>${it.from}</strong><br>${it.question}</li>`;\n  }\n  html += `</ul>`;\n}\n\nreturn [{ json: { html, count: rows.length } }];\n"
+      },
+      "id": "bd7ec2ad-68f9-4a5b-aae0-e7676203ff1b",
+      "name": "Generate the email",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        752,
+        304
+      ],
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Generate the email": {
+      "main": [
+        [
+          {
+            "node": "Sum up email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger data for new row": {
+      "main": [
+        [
+          {
+            "node": "Generate the email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7abfc875-3cd6-4402-91b7-1b7b95ab7706",
+  "meta": {
+    "instanceId": "0430772da25f7bca29bf5ef2b251086a85fb4096503a6f781526d32befd038d6"
+  },
+  "id": "8ly3m1hLLeJtvcA3",
+  "tags": [
+    {
+      "createdAt": "2025-08-18T07:15:32.460Z",
+      "updatedAt": "2025-08-18T07:15:32.460Z",
+      "id": "3T7uxjPBNibzqJlE",
+      "name": "Google"
+    },
+    {
+      "createdAt": "2025-08-18T07:16:22.756Z",
+      "updatedAt": "2025-08-18T07:16:22.756Z",
+      "id": "7zEwLFClveXBEcdb",
+      "name": "google sheet"
+    },
+    {
+      "createdAt": "2025-08-18T07:16:22.720Z",
+      "updatedAt": "2025-08-18T07:16:22.720Z",
+      "id": "MxIJ6vHorSEdfi3v",
+      "name": "google form"
+    },
+    {
+      "createdAt": "2025-08-18T07:16:22.745Z",
+      "updatedAt": "2025-08-18T07:16:22.745Z",
+      "id": "WsGNTPBsmCdx55kq",
+      "name": "email"
+    },
+    {
+      "createdAt": "2025-08-18T07:15:32.499Z",
+      "updatedAt": "2025-08-18T07:15:32.499Z",
+      "id": "bg5CwpF83fBHrGAh",
+      "name": "Productivity"
+    },
+    {
+      "createdAt": "2025-08-18T07:16:22.709Z",
+      "updatedAt": "2025-08-18T07:16:22.709Z",
+      "id": "eAzNESqLUWwWMrE9",
+      "name": "gmail"
+    }
+  ]
+}
